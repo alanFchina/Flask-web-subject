@@ -24,6 +24,10 @@ class User(db.Model):
     def __repr__(self):
         return "<User %r>" % self.name
 
+    def check_pwd(self, pwd):
+        from werkzeug.security import check_password_hash
+        return check_password_hash(self.pwd, pwd)
+
 
 class UserLog(db.Model):
     """
@@ -144,6 +148,8 @@ class Role(db.Model):
     name = db.Column(db.String(100), unique=True)  # 角色名称
     auths = db.Column(db.String(600))
     add_time = db.Column(db.DateTime, index=True, default=datetime.now)  # 添加时间
+
+    admins = db.relationship("Admin", backref='role')  # 管理员外键关系
 
     def __repr__(self):
         return "<Role %r>" % self.name

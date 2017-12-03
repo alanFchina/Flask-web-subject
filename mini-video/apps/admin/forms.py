@@ -1,9 +1,11 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SubmitField, FileField, TextAreaField, SelectField
-from wtforms.validators import DataRequired, ValidationError
-from apps.models import Admin, Tag
+from wtforms.fields import StringField, PasswordField, SubmitField, FileField, TextAreaField, SelectField, SelectMultipleField
+from wtforms.validators import DataRequired, ValidationError, EqualTo
+from apps.models import Admin, Tag, Auth, Role
 
 tags = Tag.query.all()
+auths_list = Auth.query.all()
+role_list = Role.query.all()
 
 
 class LoginForm(FlaskForm):
@@ -278,3 +280,148 @@ class PwdForm(FlaskForm):
         ).first()
         if not admin.check_pwd(pwd):
             raise ValidationError("原密码错误!")
+
+
+class AuthForm(FlaskForm):
+    name = StringField(
+        label="权限名称",
+        validators=[
+            DataRequired("请输入权限名称!")
+        ],
+        description="权限名称",
+        render_kw={
+            "class": "form-control",
+            "placeholder": "请输入权限名称!",
+            "required": "required"
+        }
+    )
+
+    url = StringField(
+        label="权限地址",
+        validators=[
+            DataRequired("请输入权限地址!")
+        ],
+        description="权限地址",
+        render_kw={
+            "class": "form-control",
+            "placeholder": "请输入权限地址!",
+            "required": "required"
+        }
+    )
+
+    submit = SubmitField(
+        "添加",
+        render_kw={
+            "class": "btn btn-primary"
+        }
+    )
+
+
+class RoleForm(FlaskForm):
+    name = StringField(
+        label="角色名称",
+        validators=[
+            DataRequired("请输入角色名称!")
+        ],
+        description="角色名称",
+        render_kw={
+            "class": "form-control",
+            "placeholder": "请输入角色名称!",
+            "required": "required"
+        }
+    )
+
+    auths = SelectMultipleField(
+        label="权限列表",
+        validators=[
+            DataRequired("请选择权限列表!")
+        ],
+        description="权限列表",
+        coerce=int,
+        choices=[(v.id, v.name) for v in auths_list],
+        render_kw={
+            "class": "form-control",
+        }
+    )
+
+    submit = SubmitField(
+        "添加",
+        render_kw={
+            "class": "btn btn-primary"
+        }
+    )
+
+
+class AdminForm(FlaskForm):
+    name = StringField(
+        label="管理员名称",
+        validators=[
+            DataRequired("请输入管理员名称!")
+        ],
+        description="管理员名称",
+        render_kw={
+            "class": "form-control",
+            "placeholder": "请输入管理员名称!",
+            "required": "required"
+        }
+    )
+
+    pwd = PasswordField(
+        label='密码',
+        validators=[
+            DataRequired("请输入密码!")
+        ],
+        description="密码",
+        render_kw={
+            "class": "form-control",
+            "placeholder": "请输入密码",
+            "required": "required"
+        }
+    )
+
+    repwd = PasswordField(
+        label='重复密码',
+        validators=[
+            DataRequired("请再次输入密码!"),
+            EqualTo("pwd", "两次密码不一致")
+        ],
+        description="重复密码",
+        render_kw={
+            "class": "form-control",
+            "placeholder": "请再次输入密码",
+            "required": "required"
+        }
+    )
+
+    # is_super = SelectField(
+    #     label="是否为超级管理员",
+    #     validators=[
+    #         DataRequired("请选择是否为超级管理员!")
+    #     ],
+    #     coerce=int,
+    #     choices=[(0, "不是"), (1, "是")],
+    #     description="是否为超级管理员",
+    #     render_kw={
+    #         "class": "form-control"
+    #     }
+    # )
+
+    role_id = SelectField(
+        label="所属角色",
+        validators=[
+            DataRequired("请选择所属角色!")
+        ],
+        description="所属角色",
+        coerce=int,
+        choices=[(v.id, v.name) for v in role_list],
+        render_kw={
+            "class": "form-control"
+        }
+    )
+
+    submit = SubmitField(
+        "确定",
+        render_kw={
+            "class": "btn btn-primary btn-block btn-flat"
+        }
+    )
